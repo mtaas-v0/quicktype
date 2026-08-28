@@ -1,0 +1,62 @@
+name: Compile Windows Executables
+
+on:
+  push:
+    branches: [ master, main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ master, main ]
+  workflow_dispatch:
+
+jobs:
+  build-windows-binaries:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          - target: bun-windows-x64
+            arch: x64
+          - target: bun-windows-arm64
+            arch: arm64
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Generate Build Metadata
+        id: meta
+        run: |
+          echo "short_sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+          echo "date=$(date +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
+
+      - name: Install dependencies & build packages
+        run: |
+          npm ci
+          npm run build
+
+      - name: Bun Compile for Windows (${{ matrix.arch }})
+        run: |
+          mkdir -p bin
+          OUTPUT_NAME="quicktype-windows-${{ matrix.arch }}-run${{ github.run_number }}-${{ steps.meta.outputs.short_sha }}-${{ steps.meta.outputs.date }}.exe"
+          bun build --compile --minify \
+            --target=${{ matrix.target }} \
+            ./src/index.ts \
+            --outfile "./bin/$OUTPUT_NAME"
+
+      - name: Upload Windows Executable Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: quicktype-windows-${{ matrix.arch }}-run${{ github.run_number }}-${{ steps.meta.outputs.short_sha }}-${{ steps.meta.outputs.date }}
+          path: ./bin/*.exe
