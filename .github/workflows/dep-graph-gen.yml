@@ -114,6 +114,7 @@ jobs:
           # Unique artifact container name per run
           name: node-dependency-graph-${{ env.TIMESTAMP }}
           path: |
-            output/dependencies-${{ env.TIMESTAMP }}.dot
-            output/dependencies-${{ env.TIMESTAMP }}.svg
+            output/*.dot
+            output/*.svg
+            output/*.pdf
           retention-days: 7
