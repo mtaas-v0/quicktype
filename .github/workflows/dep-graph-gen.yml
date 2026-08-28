@@ -1,0 +1,51 @@
+name: Generate Dependency Graph
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-graph:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+
+      - name: Install Project Dependencies
+        run: npm install
+
+      - name: Install Graphviz and Madge
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y graphviz
+          npm install -g madge
+
+      - name: Generate Timestamp and Graphs
+        id: graph-gen
+        run: |
+          # Create timestamp variable in YYYYMMDD-HHMMSS format
+          TIMESTAMP=$(date +'%Y%m%d-%H%M%S')
+          echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_ENV
+          
+          mkdir -p output
+          
+          # Generate files with the timestamp included in the filename
+          # Replace 'src/index.js' with your project's main entry point file
+          madge src/index.js --dot > "output/dependencies-$TIMESTAMP.dot"
+          madge src/index.js --image "output/dependencies-$TIMESTAMP.svg"
+
+      - name: Upload Dependency Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          # Unique artifact container name per run
+          name: node-dependency-graph-${{ env.TIMESTAMP }}
+          path: |
+            output/dependencies-${{ env.TIMESTAMP }}.dot
+            output/dependencies-${{ env.TIMESTAMP }}.svg
+          retention-days: 7
