@@ -102,7 +102,7 @@ jobs:
           # Generate files with the timestamp included in the filename
           # Replace 'src/index.js' with your project's main entry point file
           madge src/ --extensions js,jsx,mjs,ts,tsx --dot > "output/dependencies-$TIMESTAMP.dot"
-          madge src/ --extensions js,jsx,mjs,ts,tsx --image > "output/dependencies-$TIMESTAMP.svg"
+          madge src/ --extensions js,jsx,mjs,ts,tsx --image "output/dependencies-$TIMESTAMP.svg"
 #          madge  ./dist/index.js --dot > 
           
 
