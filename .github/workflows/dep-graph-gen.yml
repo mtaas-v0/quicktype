@@ -25,6 +25,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y graphviz
           npm install -g madge
+          dot -V
 
       - name: Install dependencies & build packages
         run: |
@@ -103,6 +104,7 @@ jobs:
           # Replace 'src/index.js' with your project's main entry point file
           madge src/ --extensions js,jsx,mjs,ts,tsx --dot > "output/dependencies-$TIMESTAMP.dot"
           madge src/ --extensions js,jsx,mjs,ts,tsx --image "output/dependencies-$TIMESTAMP.svg"
+          dot -Tps -Gpage="8.5,11" "output/dependencies-$TIMESTAMP.dot" -o "output/dependencies-$TIMESTAMP.pdf"
 #          madge  ./dist/index.js --dot > 
           
 
